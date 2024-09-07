@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // rect is an SVG Element that represents a rectangle. Using this element you can draw rectangles of various
 // width, height, with different stroke (outline) and fill colors, with sharp or rounded corners etc.

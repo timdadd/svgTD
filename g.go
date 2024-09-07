@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // The SVG <g> element is used to group SVG shapes together. Once grouped you can transform the whole group
 // of shapes as if it was a single shape. This is an advantage compared to a nested <svg> element which cannot

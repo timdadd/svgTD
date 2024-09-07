@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // marker is an SVG Element that represents a graphic used for drawing arrowheads or polymarkers on a
 // given <path>, <line>, <polyline> or <polygon> element.

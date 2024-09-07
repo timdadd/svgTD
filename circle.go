@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // circle is an SVG Element that represents a circle. Using this element you can draw circles of various
 // sizes (radius), with different stroke (outline) and fill colors

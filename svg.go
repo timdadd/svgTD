@@ -1,5 +1,5 @@
 // Package svgTD provides a D3 type API for generating Scalable Vector Graphics (SVG)
-package svg
+package svgTD
 
 import (
 	"bufio"
@@ -41,6 +41,16 @@ func NewWHT(w, h int, title string) (svg *SVG) {
 	return New().Width(w).Height(h).Title(title)
 }
 
+// NewWH100 gives the user a new SVG with the width and height set to 100%
+func NewWH100() (svg *SVG) {
+	return New().WidthText("100%").HeightText("100%")
+}
+
+// NewWHT100 gives the user a new SVG with the width, height set to 100% & title set
+func NewWHT100(title string) (svg *SVG) {
+	return New().WidthText("100%").HeightText("100%").Title(title)
+}
+
 func (svg *SVG) ToString() string {
 	b, _ := svg.Marshal()
 	return string(b)
@@ -80,9 +90,30 @@ func (svg *SVG) Width(w int) *SVG {
 	return svg
 }
 
+// WidthText is a helper that sets the height of the SVG in text format so "100%"
+func (svg *SVG) WidthText(h string) *SVG {
+	svg.Element.Attr("width", h)
+	return svg
+}
+
 // Height is a helper that sets the height of the SVG
 func (svg *SVG) Height(h int) *SVG {
 	svg.Element.AttrInt("height", h)
+	return svg
+}
+
+// HeightText is a helper that sets the height of the SVG in text format so "100%"
+func (svg *SVG) HeightText(h string) *SVG {
+	svg.Element.Attr("height", h)
+	return svg
+}
+
+// ViewBox controls how much of the item can be viewed
+// The value of the viewBox attribute is min-x, min-y, width, and height.
+// min-x and min-y represent the smallest X and Y coordinates that the viewBox may have (the origin coordinates of the viewBox)
+// and the width and height specify the viewBox size.
+func (svg *SVG) ViewBox(minX, minY, width, height int) *SVG {
+	svg.Element.Attr("viewBox", fmt.Sprintf("%d %d %d %d", minX, minY, width, height))
 	return svg
 }
 

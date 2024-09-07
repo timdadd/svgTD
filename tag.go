@@ -1,11 +1,12 @@
-package svg
+package svgTD
 
 import "fmt"
 
 type Tag struct {
-	open  string
-	inner string
-	close string
+	open      string
+	inner     string
+	close     string
+	openClose string
 }
 
 // Tag returns the opening and closing tag for this element
@@ -22,6 +23,7 @@ func (e *Element) Tag() (tag Tag) {
 	tag.open += e.attrTags()
 	tag.open += e.styleTag()
 	tag.open += e.transformTags()
+	tag.openClose = tag.open + "/>"
 	tag.open += ">"
 	return
 }

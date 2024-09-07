@@ -1,4 +1,6 @@
-package svg
+package svgTD
+
+import "unicode"
 
 // Text places the specified text, t at x,y
 //
@@ -69,4 +71,16 @@ func (txt *text) Transform(t Transformation) *text {
 func (txt *text) SetText(s ...string) *text {
 	txt.Attr("text", s...)
 	return txt
+}
+
+// MeasureText 10 characters needs 90 px
+// This is a first version - will evolve later
+func MeasureText(s string) int {
+	capsCount := 0
+	for _, c := range s {
+		if unicode.IsUpper(c) {
+			capsCount++
+		}
+	}
+	return len(s)*90/10 + capsCount*4
 }

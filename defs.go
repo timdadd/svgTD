@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // Defs is an SVG Element used to store graphical objects that will be used at a later time.
 // Objects created inside a Defs element are not rendered directly.

@@ -1,6 +1,7 @@
-package svg
+package svgTD
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io"
 	"strconv"
@@ -152,6 +153,7 @@ func (e *Element) ViewBox(minX, minY, width, height int) *Element {
 	return e
 }
 
+// writeElement writes out an element either in pretty format or packed format
 func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 	if e == nil {
 		return
@@ -162,34 +164,34 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 		}
 	}
 	tag := e.Tag()
+	openTag := tag.open
+	closeTag := tag.close
+	if len(e.elements) == 0 && tag.inner == "" {
+		openTag = tag.openClose
+		closeTag = ""
+	}
 	if pretty {
-		if tag.inner == "" {
-			if len(e.elements) == 0 {
-				if _, err = fmt.Fprint(w, tag.open); err != nil {
-					return
-				}
-			} else {
-				if _, err = fmt.Fprintln(w, tag.open); err != nil {
-					return
-				}
-			}
-		} else {
-			if _, err = fmt.Fprintln(w, tag.open); err != nil {
-				return
-			}
+		if _, err = fmt.Fprintln(w, openTag); err != nil {
+			return
+		}
+	} else {
+		if _, err = fmt.Fprint(w, openTag); err != nil {
+			return
+		}
+	}
+	if tag.inner > "" {
+		if pretty {
 			if _, err = fmt.Fprint(w, strings.Repeat("  ", level+1)); err != nil {
 				return
 			}
-			if _, err = fmt.Fprintln(w, tag.inner); err != nil {
+			if err = xml.EscapeText(w, []byte(tag.inner)); err != nil {
 				return
 			}
-		}
-	} else { //efficient
-		if _, err = fmt.Fprint(w, tag.open); err != nil {
-			return
-		}
-		if tag.inner > "" {
-			if _, err = fmt.Fprint(w, tag.inner); err != nil {
+			if _, err = fmt.Fprintln(w); err != nil {
+				return
+			}
+		} else {
+			if err = xml.EscapeText(w, []byte(tag.inner)); err != nil {
 				return
 			}
 		}
@@ -204,15 +206,12 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 
 	if pretty {
 		if len(e.elements) > 0 || tag.inner > "" {
-			if _, err = fmt.Fprint(w, strings.Repeat("  ", level)); err != nil {
+			if _, err = fmt.Fprintf(w, "%s%s\n", strings.Repeat("  ", level), closeTag); err != nil {
 				return
 			}
 		}
-		if _, err = fmt.Fprintln(w, tag.close); err != nil {
-			return
-		}
-	} else {
-		if _, err = fmt.Fprintf(w, tag.close); err != nil {
+	} else { // packed
+		if _, err = fmt.Fprint(w, closeTag); err != nil {
 			return
 		}
 	}

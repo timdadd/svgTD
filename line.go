@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 // Line is an SVG Element that draws a straight line between two points.
 //

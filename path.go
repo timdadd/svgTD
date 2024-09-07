@@ -1,4 +1,4 @@
-package svg
+package svgTD
 
 import (
 	"fmt"
@@ -211,15 +211,21 @@ func (pc *pathCommand) Arc(absolute bool) *arc {
 }
 
 // Attrs sets the attrs of the arc
-func (a *arc) Attrs(ax, ay, r int, large, sweep bool, ex, ey int) *pathCommand {
-	a.path.append(pathData{p: &point{x: float64(ax), y: float64(ay)}})
-	a.path.append(pathData{a: &axis{xy: float64(r)}})
+func (a *arc) Attrs(rx, ry, xAxisRotation int, large, sweep bool, endX, endY int) *pathCommand {
+	a.path.append(pathData{p: &point{x: float64(rx), y: float64(ry)}})
+	a.path.append(pathData{a: &axis{xy: float64(xAxisRotation)}})
 	a.path.append(pathData{b: &boolean{b: large}})
 	a.path.append(pathData{b: &boolean{b: sweep}})
-	a.path.append(pathData{p: &point{x: float64(ex), y: float64(ey)}})
+	a.path.append(pathData{p: &point{x: float64(endX), y: float64(endY)}})
 	return &pathCommand{path: a.path}
 }
 
 func (pc *pathCommand) Element() *Element {
 	return pc.path.Element
+}
+
+// Style sets a style tag on the text
+func (pc *pathCommand) Style(k, v string) *pathCommand {
+	pc.path.Element.Style(k, v)
+	return pc
 }
