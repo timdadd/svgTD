@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<h2>Foreign Object</h2>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <style>
+        div {
+            color: white;
+            font: 18px serif;
+            height: 100%;
+            overflow: auto;
+        }
+    </style>
+    <!-- Common use case: embed HTML text into SVG -->
+    <polygon points="5,5 195,10 185,185 10,195"/>
+    <text>
+        hello
+    </text>
+    <foreignObject x="20" y="20" height="160" width="160">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+        <div>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis&#xA;            mi ut ultricies. Nullam magna ipsum, porta vel dui convallis, rutrum&#xA;            imperdiet eros. Aliquam erat volutpat.
+        </div>
+        </body>
+    </foreignObject>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <style>
+        div {
+            color: white;
+            font: 18px serif;
+            height: 100%;
+            overflow: auto;
+        }
+    </style>
+    <!-- Common use case: embed HTML text into SVG -->
+    <polygon points="5,5 195,10 185,185 10,195"/>
+    <foreignObject x="20" y="20" height="160" width="160">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis&#xA;            mi ut ultricies. Nullam magna ipsum, porta vel dui convallis, rutrum&#xA;            imperdiet eros. Aliquam erat volutpat.
+        </div>
+    </foreignObject>
+</svg>
+
+</body>
+</html>

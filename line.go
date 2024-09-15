@@ -26,7 +26,7 @@ func (l *line) AttrsFloat(x1, y1, x2, y2 float64) *line {
 }
 
 func (l *line) Class(class string) *line {
-	l.class = class
+	l.Element.Class(class)
 	return l
 }
 
@@ -37,5 +37,9 @@ func (l *line) Style(k, v string) *line {
 
 func (l *line) Transform(t Transformation) *line {
 	l.Element.Transform(t)
+	return l
+}
+func (l *line) Comment(c string) *line {
+	l.Element.Comment(c)
 	return l
 }

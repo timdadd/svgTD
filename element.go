@@ -18,6 +18,7 @@ type Element struct {
 	styles          []string          // List of keys into styleMap
 	transformations []Transformation
 	elements        []*Element
+	comments        []string // Comment
 }
 
 func newElement(tagName string, parent *Element) *Element {
@@ -46,7 +47,7 @@ func (e *Element) Append(tagName string) (element *Element) {
 		}
 	default: // Let element we're appending to decide what happens
 		switch e.tagName {
-		case "svg", "g", "a": // parent
+		case "svg", "g", "a", "foreignObject", "style": // parent
 			return e.AppendChild(tagName)
 		}
 	}
@@ -81,6 +82,18 @@ func (e *Element) TextXY(x, y int, s ...string) *text {
 	t := e.Text(s...) // Create the element first
 	t.Attrs(x, y)     // Now add x,y
 	return t
+}
+
+// ForeignObject adds a foreign object to the parent (e.g. svg.Text)
+func (e *Element) ForeignObject() *foreignObject {
+	element := e.Append("foreignObject")
+	fo := &foreignObject{element}
+	return fo
+}
+
+// ForeignObjectXYHW adds a foreign object element to the parent and sets the text X,Y,H,W and optionally text
+func (e *Element) ForeignObjectXYHW(x, y, h, w int) *foreignObject {
+	return e.ForeignObject().Attrs(x, y, h, w)
 }
 
 // Line is an SVG Element that draws a straight line between two points.
@@ -120,22 +133,28 @@ func (e *Element) Defs() *defs {
 
 // SetText sets the text field, can be multiple fields to build the final text
 func (e *Element) SetText(s ...string) *Element {
-	switch len(s) {
-	case 0: // Do nothing
-	case 1: // Singleton value
-		e.Attr("text", s[0])
-	default: // format first
-		a := make([]any, len(s)-1)
-		for i := range s[1:] {
-			a[i] = s[i]
-		}
-		e.Attr("text", fmt.Sprintf(s[0], a...))
-	}
+	e.Attr("text", s...)
+	//switch len(s) {
+	//case 0: // Do nothing
+	//case 1: // Singleton value
+	//	e.Attr("text", s[0])
+	//default: // format first
+	//	a := make([]any, len(s)-1)
+	//	for i := range s[1:] {
+	//		a[i] = s[i]
+	//	}
+	//	e.Attr("text", fmt.Sprintf(s[0], a...))
+	//}
 	return e
 }
 
 func (e *Element) Class(class string) *Element {
 	e.class = class
+	return e
+}
+
+func (e *Element) Comment(comment string) *Element {
+	e.comments = append(e.comments, comment)
 	return e
 }
 
@@ -158,6 +177,30 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 	if e == nil {
 		return
 	}
+
+	// Comments at the top
+	if len(e.comments) > 0 && pretty {
+		if len(e.comments) == 1 {
+			if _, err = fmt.Fprint(w, strings.Repeat("  ", level)); err != nil {
+				return
+			}
+			if _, err = fmt.Fprintf(w, "<!-- %s -->\n", e.comments[0]); err != nil {
+				return
+			}
+		} else {
+			if _, err = fmt.Fprintln(w, strings.Repeat("  ", level), "<!--"); err != nil {
+				return
+			}
+			for _, c := range e.comments {
+				if _, err = fmt.Fprintln(w, strings.Repeat("  ", level), c); err != nil {
+					return
+				}
+			}
+			if _, err = fmt.Fprintln(w, strings.Repeat("  ", level), "-->"); err != nil {
+				return
+			}
+		}
+	}
 	if pretty {
 		if _, err = fmt.Fprint(w, strings.Repeat("  ", level)); err != nil {
 			return
@@ -166,7 +209,7 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 	tag := e.Tag()
 	openTag := tag.open
 	closeTag := tag.close
-	if len(e.elements) == 0 && tag.inner == "" {
+	if len(e.elements) == 0 && len(tag.inner) == 0 {
 		openTag = tag.openClose
 		closeTag = ""
 	}
@@ -179,20 +222,28 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 			return
 		}
 	}
-	if tag.inner > "" {
-		if pretty {
-			if _, err = fmt.Fprint(w, strings.Repeat("  ", level+1)); err != nil {
-				return
-			}
-			if err = xml.EscapeText(w, []byte(tag.inner)); err != nil {
-				return
-			}
-			if _, err = fmt.Fprintln(w); err != nil {
-				return
-			}
-		} else {
-			if err = xml.EscapeText(w, []byte(tag.inner)); err != nil {
-				return
+	if len(tag.inner) > 0 {
+		for _, inner := range tag.inner {
+			if pretty {
+				if _, err = fmt.Fprint(w, strings.Repeat("  ", level+1)); err != nil {
+					return
+				}
+				if tag.escapeInner {
+					if err = xml.EscapeText(w, []byte(inner)); err != nil {
+						return
+					}
+					if _, err = fmt.Fprintln(w); err != nil {
+						return
+					}
+				} else {
+					if _, err = fmt.Fprintln(w, inner); err != nil {
+						return
+					}
+				}
+			} else {
+				if err = xml.EscapeText(w, []byte(inner)); err != nil {
+					return
+				}
 			}
 		}
 	}
@@ -205,7 +256,7 @@ func writeElement(e *Element, w io.Writer, level int, pretty bool) (err error) {
 	level--
 
 	if pretty {
-		if len(e.elements) > 0 || tag.inner > "" {
+		if len(e.elements) > 0 || len(tag.inner) > 0 {
 			if _, err = fmt.Fprintf(w, "%s%s\n", strings.Repeat("  ", level), closeTag); err != nil {
 				return
 			}
